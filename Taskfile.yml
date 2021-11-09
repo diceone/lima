@@ -2,7 +2,7 @@ version: '3'
 tasks:
   run:
     cmds:
-      - lmactl start ./dev.yaml
+      - limactl start ./dev.yaml
   delete:
     cmds:
       - limactl stop dev && limactl delete dev
