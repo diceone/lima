@@ -58,7 +58,6 @@ provision:
     gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
     EOF
     dnf install -y kubectl
-    curl -L https://raw.githubusercontent.com/warrensbox/terraform-switcher/release/install.sh | bash
 probes:
   - script: |
       #!/bin/bash
