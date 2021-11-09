@@ -1,0 +1,70 @@
+# This example requires Lima v0.7.0 or later.
+images:
+  - location: "https://download.fedoraproject.org/pub/fedora/linux/releases/35/Cloud/x86_64/images/Fedora-Cloud-Base-35-1.2.x86_64.qcow2"
+    arch: "x86_64"
+    digest: "sha256:fe84502779b3477284a8d4c86731f642ca10dd3984d2b5eccdf82630a9ca2de6"
+  - location: "https://download.fedoraproject.org/pub/fedora/linux/releases/35/Cloud/aarch64/images/Fedora-Cloud-Base-35-1.2.aarch64.qcow2"
+    arch: "aarch64"
+    digest: "sha256:c71f2e6ce75b516d565e2c297ea9994c69b946cb3eaa0a4bbea400dbd6f59ae6"
+mounts:
+  - location: "~"
+    writable: false
+  - location: "/tmp/lima"
+    writable: true
+
+cpus: 2
+
+memory: "4GiB"
+
+ssh:
+  # A localhost port of the host. Forwarded to port 22 of the guest.
+  # Default: 0 (automatically assigned to a free port)
+  localPort: 0
+  # Load ~/.ssh/*.pub in addition to $LIMA_HOME/_config/user.pub .
+  # This option is useful when you want to use other SSH-based
+  # applications such as rsync with the Lima instance.
+  # If you have an insecure key under ~/.ssh, do not use this option.
+  # Default: true
+  loadDotSSHPubKeys: true
+  # Forward ssh agent into the instance.
+  # Default: false
+  forwardAgent: false
+
+containerd:
+  # Enable system-wide (aka rootful)  containerd and its dependencies (BuildKit, Stargz Snapshotter)
+  # Default: false
+  system: true
+  # Enable user-scoped (aka rootless) containerd and its dependencies
+  # Default: true
+  user: true
+
+# Provisioning scripts need to be idempotent because they might be called
+# multiple times, e.g. when the host VM is being restarted.
+provision:
+- mode: system
+  script: |
+    #!/bin/bash
+    set -eux -o pipefail
+    command -v ansible >/dev/null 2>&1 && exit 0
+    dnf update -y
+    dnf install -y vim lsof htop ansible
+    cat <<EOF | sudo tee /etc/yum.repos.d/kubernetes.repo
+    [kubernetes]
+    name=Kubernetes
+    baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
+    enabled=1
+    gpgcheck=1
+    repo_gpgcheck=1
+    gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+    EOF
+    dnf install -y kubectl
+    curl -L https://raw.githubusercontent.com/warrensbox/terraform-switcher/release/install.sh | bash
+probes:
+  - script: |
+      #!/bin/bash
+      set -eux -o pipefail
+      if ! timeout 20s bash -c "until command -v ansible >/dev/null 2>&1; do sleep 3; done"; then
+        echo >&2 "ansible is not installed yet"
+        exit 1
+      fi
+    hint: See "/var/log/cloud-init-output.log". in the guest
