@@ -47,7 +47,7 @@ provision:
     set -eux -o pipefail
     command -v ansible >/dev/null 2>&1 && exit 0
     dnf update -y
-    dnf install -y vim lsof htop ansible
+    dnf install -y vim lsof htop ansible git tig
     cat <<EOF | sudo tee /etc/yum.repos.d/kubernetes.repo
     [kubernetes]
     name=Kubernetes
