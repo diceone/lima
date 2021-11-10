@@ -8,7 +8,7 @@ images:
     digest: "sha256:c71f2e6ce75b516d565e2c297ea9994c69b946cb3eaa0a4bbea400dbd6f59ae6"
 mounts:
   - location: "~"
-    writable: false
+    writable: true
   - location: "/tmp/lima"
     writable: true
 
@@ -47,7 +47,7 @@ provision:
     set -eux -o pipefail
     command -v ansible >/dev/null 2>&1 && exit 0
     dnf update -y
-    dnf install -y vim lsof htop ansible git tig
+    dnf install -y vim wget htop ansible git tig
     cat <<EOF | sudo tee /etc/yum.repos.d/kubernetes.repo
     [kubernetes]
     name=Kubernetes
