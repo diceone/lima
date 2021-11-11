@@ -48,6 +48,7 @@ provision:
     command -v ansible >/dev/null 2>&1 && exit 0
     dnf update -y
     dnf install -y vim wget htop ansible git tig
+    curl -sLS https://get.arkade.dev | sudo sh
     cat <<EOF | sudo tee /etc/yum.repos.d/kubernetes.repo
     [kubernetes]
     name=Kubernetes
